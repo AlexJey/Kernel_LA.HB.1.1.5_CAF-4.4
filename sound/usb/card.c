@@ -73,6 +73,18 @@ MODULE_DESCRIPTION("USB Audio");
 MODULE_LICENSE("GPL");
 MODULE_SUPPORTED_DEVICE("{{Generic,USB Audio}}");
 
+#ifdef CONFIG_VENDOR_LEECO
+#define LETV_USB_AUDIO_VID  0x262A
+#define LETV_USB_AUDIO_PID_0  0x1530
+#define LETV_USB_AUDIO_PID_1  0x1532
+#define LETV_USB_AUDIO_PID_2  0x1534
+
+#define IS_LETV_USB_AUDIO(usb_id) \
+(LETV_USB_AUDIO_VID == USB_ID_VENDOR(usb_id) && (\
+(LETV_USB_AUDIO_PID_0 == USB_ID_PRODUCT(usb_id)) || \
+(LETV_USB_AUDIO_PID_1 == USB_ID_PRODUCT(usb_id)) || \
+(LETV_USB_AUDIO_PID_2 == USB_ID_PRODUCT(usb_id))))
+#endif
 
 static int index[SNDRV_CARDS] = SNDRV_DEFAULT_IDX;	/* Index 0-MAX */
 static char *id[SNDRV_CARDS] = SNDRV_DEFAULT_STR;	/* ID for this card */
@@ -83,6 +95,13 @@ static int pid[SNDRV_CARDS] = { [0 ... (SNDRV_CARDS-1)] = -1 };
 static int device_setup[SNDRV_CARDS]; /* device parameter for this card */
 static bool ignore_ctl_error;
 static bool autoclock = true;
+
+#ifdef CONFIG_VENDOR_LEECO
+struct letv_usb_audio_info{
+	int letv_pid;
+	bool is_letv_usb_audio;
+} letv_usb_audio;
+#endif
 
 module_param_array(index, int, NULL, 0444);
 MODULE_PARM_DESC(index, "Index value for the USB audio adapter.");
@@ -111,6 +130,7 @@ static DEFINE_MUTEX(register_mutex);
 static struct snd_usb_audio *usb_chip[SNDRV_CARDS];
 static struct usb_driver usb_audio_driver;
 
+#ifdef CONFIG_VENDOR_LEECO
 struct snd_usb_substream *find_snd_usb_substream(unsigned int card_num,
 	unsigned int pcm_idx, unsigned int direction, struct snd_usb_audio
 	**uchip, void (*disconnect_cb)(struct snd_usb_audio *chip))
@@ -175,6 +195,7 @@ err:
 	mutex_unlock(&register_mutex);
 	return subs;
 }
+#endif
 
 /*
  * disconnect streams
@@ -477,6 +498,12 @@ static int snd_usb_audio_create(struct usb_interface *intf,
 	strcpy(card->driver, "USB-Audio");
 	sprintf(component, "USB%04x:%04x",
 		USB_ID_VENDOR(chip->usb_id), USB_ID_PRODUCT(chip->usb_id));
+#ifdef CONFIG_VENDOR_LEECO
+	if (IS_LETV_USB_AUDIO(chip->usb_id)) {
+		letv_usb_audio.is_letv_usb_audio = true;
+		letv_usb_audio.letv_pid = (0x0000FFFF & USB_ID_PRODUCT(chip->usb_id));
+	}
+#endif
 	snd_component_add(card, component);
 
 	/* retrieve the device string as shortname */
@@ -660,8 +687,12 @@ static int usb_audio_probe(struct usb_interface *intf,
 	chip->num_interfaces++;
 	usb_set_intfdata(intf, chip);
 	intf->needs_remote_wakeup = 1;
-	usb_enable_autosuspend(chip->dev);
-	atomic_dec(&chip->active);
+#ifdef CONFIG_VENDOR_LEECO
+	if (IS_LETV_USB_AUDIO(chip->usb_id)) {
+		usb_enable_autosuspend(dev);
+		pm_runtime_set_autosuspend_delay(&dev->dev, 40 * 1000); /* msec */
+	}
+#endif
 	mutex_unlock(&register_mutex);
 	return 0;
 
@@ -721,6 +752,10 @@ static void usb_audio_disconnect(struct usb_interface *intf)
 		list_for_each_entry(mixer, &chip->mixer_list, list) {
 			snd_usb_mixer_disconnect(mixer);
 		}
+#ifdef CONFIG_VENDOR_LEECO
+		letv_usb_audio.is_letv_usb_audio = false;
+		letv_usb_audio.letv_pid = 0;
+#endif
 	}
 
 	chip->num_interfaces--;
@@ -761,6 +796,16 @@ void snd_usb_unlock_shutdown(struct snd_usb_audio *chip)
 	if (atomic_dec_and_test(&chip->usage_count))
 		wake_up(&chip->shutdown_wait);
 }
+
+#ifdef CONFIG_VENDOR_LEECO
+void usb_audio_if_letv(bool *letv, int *pid)
+{
+	*letv = letv_usb_audio.is_letv_usb_audio;
+	*pid  = letv_usb_audio.letv_pid;
+	return;
+}
+EXPORT_SYMBOL(usb_audio_if_letv);
+#endif
 
 #ifdef CONFIG_PM
 
