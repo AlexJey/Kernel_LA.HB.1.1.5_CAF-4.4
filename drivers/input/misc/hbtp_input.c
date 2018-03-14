@@ -1071,7 +1071,7 @@ static int hbtp_pinctrl_init(struct hbtp_data *data)
 	bool pinctrl_ddic_sus_found = false;
 	int count = 0;
 
-	data->ts_pinctrl = devm_pinctrl_get(&(data->pdev->dev));
+	data->ts_pinctrl = (int) devm_pinctrl_get(&(data->pdev->dev));
 	if (IS_ERR_OR_NULL(data->ts_pinctrl)) {
 		dev_err(&data->pdev->dev,
 			"Target does not use pinctrl\n");

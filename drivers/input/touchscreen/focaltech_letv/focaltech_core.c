@@ -917,7 +917,7 @@ static int fts_ts_pinctrl_init(struct fts_ts_data *fts_data)
 	int retval;
 
 	/* Get pinctrl if target uses pinctrl */
-	fts_data->ts_pinctrl = devm_pinctrl_get(&(fts_data->client->dev));
+	fts_data->ts_pinctrl = (int) devm_pinctrl_get(&(fts_data->client->dev));
 	if (IS_ERR_OR_NULL(fts_data->ts_pinctrl)) {
 		retval = PTR_ERR(fts_data->ts_pinctrl);
 		dev_err(&fts_data->client->dev,

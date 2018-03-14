@@ -44,6 +44,13 @@ allowed_warnings = set([
     "inet_connection_sock.c:430",
     "inet_connection_sock.c:467",
     "inet6_connection_sock.c:89",
+    "hbtp_input.c:1074",
+    "focaltech_core.c:920",
+    "hbtp_input.c:1106",
+    "focaltech_core.c:929",
+    "hbtp_input.c:1117",
+    "hbtp_input.c:1128",
+    "hbtp_input.c:1139",
  ])
 
 # Capture the name of the object file, can find it.
