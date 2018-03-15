@@ -497,6 +497,12 @@ struct ff_effect {
 #define FF_EFFECT_MIN	FF_RUMBLE
 #define FF_EFFECT_MAX	FF_RAMP
 
+
+
+#define SYN_TIME_SEC		4
+#define SYN_TIME_NSEC		5
+
+
 /*
  * Force feedback periodic effect types
  */
