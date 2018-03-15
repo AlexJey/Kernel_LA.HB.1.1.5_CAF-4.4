@@ -36,7 +36,7 @@
 #include <linux/netdevice.h>
 #include <linux/dma-mapping.h>
 #include <asm/types.h>
-#include <asm/scatterlist.h>
+#include <linux/scatterlist.h>
 #include <adf_os_types.h>
 #include <adf_nbuf.h>
 

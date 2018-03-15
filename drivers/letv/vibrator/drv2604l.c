@@ -976,7 +976,6 @@ static int drv2604l_probe(struct i2c_client* client, const struct i2c_device_id*
 			return err;
 	}
 
-	haptics->platform_data.enable_gpio = devm_gpiod_get(&client->dev, "enable");
 	if (IS_ERR(haptics->platform_data.enable_gpio)) {
 		err = PTR_ERR(haptics->platform_data.enable_gpio);
 		if (err != -ENOENT && err != -ENOSYS)

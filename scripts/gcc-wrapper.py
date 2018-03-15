@@ -51,6 +51,13 @@ allowed_warnings = set([
     "hbtp_input.c:1117",
     "hbtp_input.c:1128",
     "hbtp_input.c:1139",
+    "focaltech_core.c:940",
+    "msm-cdc-pinctrl.c:158",
+    "focaltech_core.c:951",
+    "msm-cdc-pinctrl.c:166",
+    "msm-cdc-pinctrl.c:175",
+    "focaltech_flash.c:3152",
+    "focaltech_flash.c:3191",
  ])
 
 # Capture the name of the object file, can find it.
