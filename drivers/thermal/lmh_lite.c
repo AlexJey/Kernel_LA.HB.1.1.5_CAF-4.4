@@ -1076,6 +1076,7 @@ static int lmh_debug_lmh_config(struct lmh_debug_ops *ops, uint32_t *buf,
 
 static void lmh_voltage_scale_set(uint32_t voltage)
 {
+	extern struct mutex scm_lmh_lock;
 	char trace_buf[MAX_TRACE_EVENT_MSG_LEN] = "";
 
 	mutex_lock(&scm_lmh_lock);
